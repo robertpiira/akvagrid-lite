@@ -5,42 +5,37 @@
   twitter: @robertpiira
 */
 
-  
-var grids = {
 
-  settings: {
+var grids = [
+  {
+    gridName: 'desktop',
+    bpFrom: {size: 75, unit: 'em'},
+    bpTo: {size: 95, unit: 'em'},
+    columnCount: 6,
+    lineHeight: {size: 1.5, unit: 'em'},
+    gutterWidth: {size: 1.5, unit: 'em'},
+    outerGutterWidth: {size: -2, unit: '%'},
+    width: {size: 92, unit: '%'},
+    borderTheme: {color: 'blue', style: 'solid'},
     maxWidth: {size: 1000, unit: 'px'},
     opacity: 0.5,
     zindex: '1'
   },
-
-  grids:
-  [
-    {
-      type: 'grid',
-      gridName: 'desktop',
-      bpFrom: {size: 75, unit: 'em'},
-      bpTo: {size: 95, unit: 'em'},
-      columnCount: 6,
-      lineHeight: {size: 1.5, unit: 'em'},
-      gutterWidth: {size: 1.5, unit: 'em'},
-      width: {size: 92, unit: '%'},
-      borderTheme: {color: 'blue', style: 'solid'}
-    },
-    {
-      type: 'grid',
-      gridName: 'tablet',
-      bpFrom: {size: 45, unit: 'em'},
-      bpTo: {size: 75, unit: 'em'},
-      columnCount: 4,
-      lineHeight: {size: 1.5, unit: 'em'},
-      gutterWidth: {size: 1.5, unit: 'em'},
-      width: null,
-      borderTheme: {color: 'purple', style: 'dashed'}
-    }
-  ]
-
-};
+  {
+    gridName: 'tablet',
+    bpFrom: {size: 45, unit: 'em'},
+    bpTo: {size: 75, unit: 'em'},
+    columnCount: 4,
+    lineHeight: {size: 1.5, unit: 'em'},
+    gutterWidth: {size: 1.5, unit: 'em'},
+    outerGutterWidth: {size: -2, unit: '%'},
+    width: null,
+    borderTheme: {color: 'purple', style: 'dashed'},
+    maxWidth: {size: 1000, unit: 'px'},
+    opacity: 0.5,
+    zindex: '1'
+  }
+];
 
 
 
@@ -56,11 +51,12 @@ var grids = {
   };
 
   var els = {
-    wrapper:    '.akva-grid',
-    columns:    '.akva-cols',
-    column:     '.akva-col',
-    baseline:   '.akva-baseline',
-    line:       '.akva-baseline-unit'
+    wrapper: '.akva-grid',
+    inner: '.akva-inner',
+    columns: '.akva-cols',
+    column: '.akva-col',
+    baseline: '.akva-baseline',
+    line: '.akva-baseline-unit'
   };
 
   var log = function () {
@@ -77,10 +73,14 @@ var grids = {
     this.columnCount = o.columnCount;
     this.bpFrom = o.bpFrom.size + o.bpFrom.unit;
     this.bpTo = o.bpTo.size + o.bpTo.unit;
-    this.lineHeight = (o.lineHeight) ? ((o.lineHeight.size) ? o.lineHeight.size : 0) + o.lineHeight.unit : null;
-    this.gutterWidth = (o.gutterWidth) ? ((o.gutterWidth.size) ? o.gutterWidth.size : 0) + o.gutterWidth.unit : null;
+    this.lineHeight = (o.lineHeight) ? ((o.lineHeight.size) ? o.lineHeight.size : null) + o.lineHeight.unit : null;
+    this.gutterWidth = (o.gutterWidth) ? ((o.gutterWidth.size) ? o.gutterWidth.size : 0) + o.gutterWidth.unit : 0;
+    this.outerGutterWidth = (o.outerGutterWidth) ? ((o.outerGutterWidth.size) ? o.outerGutterWidth.size : 0) + o.outerGutterWidth.unit : 0;
     this.width = (o.width) ? ((o.width.size) ? o.width.size : 'auto') + o.width.unit : null;
     this.borderTheme = (o.borderTheme) ? {color: o.borderTheme.color, style: o.borderTheme.style} : null;
+    this.maxWidth = (o.maxWidth) ? ((o.maxWidth.size) ? o.maxWidth.size : 'auto') + o.maxWidth.unit : 'auto';
+    this.opacity = (o.opacity) ? o.opacity : 1;
+    this.zindex = (o.zindex) ? o.zindex : 1;
   };
 
   Grid.prototype = {
@@ -90,17 +90,36 @@ var grids = {
       log('init: ' + this.gridName + ' grid');
 
       this.build();
-    
+
     },
 
     build: function () {
-
-      var wrapper = $(els.wrapper);
-
+      var wrapper = this.createWrapper();
       var columns = this.createColumns();
 
-      wrapper.append(columns);
-      
+      wrapper.find(els.inner).append(columns);
+
+      $('body').append(wrapper);
+    },
+
+    createWrapper: function () {
+      var wrapper = $('<div class="' + els.wrapper.slice(1) + '" />').css({
+        maxWidth: this.maxWidth,
+        opacity: this.opacity,
+        zIndex: this.zindex
+      });
+      var inner = $('<div class="' + els.inner.slice(1) + '" />');
+
+      if (this.outerGutterWidth) {
+        inner.css({
+          'margin-left': this.outerGutterWidth,
+          'margin-right': this.outerGutterWidth
+        });
+      }
+
+      wrapper.append(inner);
+
+      return wrapper;
     },
 
     createColumns: function () {
@@ -140,15 +159,8 @@ var grids = {
 
     instances: [],
 
-    settings: {
-      maxWidth: (grids.settings.maxWidth) ? ((grids.settings.maxWidth.size) ? grids.settings.maxWidth.size : 'auto') + grids.settings.maxWidth.unit : 'auto',
-      opacity: grids.settings.opacity,
-      zindex: grids.settings.zindex
-    },
-
     init: function () {
-      this.add(grids.grids);
-      this.build();
+      this.add(grids);
       log(this.instances);
       this.initGrids();
     },
@@ -163,18 +175,9 @@ var grids = {
       });
     },
 
-    build: function () {
-      var wrapper = $('<div class="' + els.wrapper.slice(1) + '" />').css({
-        maxWidth: this.settings.maxWidth,
-        opacity: this.settings.opacity,
-        zIndex: this.settings.zindex
-      });
-
-      $('body').append(wrapper);
-    },
-
     initGrids: function () {
       $.each(this.instances, function (i, o) {
+        log('the o is ', o);
         o.init();
       });
     }

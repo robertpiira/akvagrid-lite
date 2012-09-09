@@ -13,7 +13,6 @@
 .akva-grid * {
   margin: 0;
   padding: 0;
-  list-style: none;
   box-sizing: border-box;
 }
 
@@ -31,7 +30,7 @@
 }
 
 .akva-baseline-unit {
-  margin-bottom: 1.5em;
+  height: 1.5em; /* hardcoded */
   border-bottom: 1px dashed rgba(63, 95, 110, .5);
 }
 
@@ -46,22 +45,17 @@
   top: 0;
   bottom: 0;
   margin: 0 auto;
-  padding: 0 2%;
   z-index: 1;
-  overflow: hidden;
-  max-width: 1000px;
-  border: 1px solid rgba(110, 180, 235,.9);
-  border-width: 0 1px;
+}
+
+.akva-inner {
+  height: 100%
 }
 
 .akva-cols {
   height: 100%;
-  width: 100%;
   display: -webkit-flex;
   display: flex;
-  position: absolute;
-  left: 0;
-  top: 0;
 }
 
 .akva-col {
@@ -69,6 +63,6 @@
   flex: 1;
   border: 1px solid rgba(110, 180, 235,.9);
   border-width: 0 1px;
-  margin: 0 2%;
+  margin: 0 2%; /* hardcoded */
   /* -webkit-flex-grow: 2; */
 }
