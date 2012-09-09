@@ -21,7 +21,7 @@ var grids = {
       gridName: 'desktop',
       bpFrom: {size: 75, unit: 'em'},
       bpTo: {size: 95, unit: 'em'},
-      columnCount: 11,
+      columnCount: 6,
       lineHeight: {size: 1.5, unit: 'em'},
       gutterWidth: {size: 1.5, unit: 'em'},
       width: {size: 92, unit: '%'},
@@ -32,7 +32,7 @@ var grids = {
       gridName: 'tablet',
       bpFrom: {size: 45, unit: 'em'},
       bpTo: {size: 75, unit: 'em'},
-      columnCount: 5,
+      columnCount: 4,
       lineHeight: {size: 1.5, unit: 'em'},
       gutterWidth: {size: 1.5, unit: 'em'},
       width: null,
@@ -63,8 +63,16 @@ var grids = {
     line:       '.akva-baseline-unit'
   };
 
+  var log = function () {
+    if (debug.code) {
+      if (window.console && window.console.log && window.console.log.apply) {
+        window.console.log.apply(console, ['akva: ', arguments]);
+      }
+    }
+  };
+
   // Grid contructor
-  var Grid = function (o) {
+  var Grid = function Grid(o) {
     this.gridName = o.gridName;
     this.columnCount = o.columnCount;
     this.bpFrom = o.bpFrom.size + o.bpFrom.unit;
@@ -73,22 +81,13 @@ var grids = {
     this.gutterWidth = (o.gutterWidth) ? ((o.gutterWidth.size) ? o.gutterWidth.size : 0) + o.gutterWidth.unit : null;
     this.width = (o.width) ? ((o.width.size) ? o.width.size : 'auto') + o.width.unit : null;
     this.borderTheme = (o.borderTheme) ? {color: o.borderTheme.color, style: o.borderTheme.style} : null;
-
-    this.log = function () {
-      if (debug.code) {
-        if (window.console && window.console.log && window.console.log.apply) {
-          window.console.log.apply(console, ['akva: ', arguments]);
-        }
-      }
-    };
-
   };
 
   Grid.prototype = {
 
     init: function () {
 
-      this.log('init: ' + this.gridName + ' grid');
+      log('init: ' + this.gridName + ' grid');
 
       this.build();
     
@@ -105,7 +104,7 @@ var grids = {
     },
 
     createColumns: function () {
-      this.log('creating ' + this.columnCount + ' columns for ' + this.gridName);
+      log('creating ' + this.columnCount + ' columns for ' + this.gridName);
       var columns = $('<div class="' + els.columns.slice(1) + '" />');
       var column = $('<div class="' + els.column.slice(1) + '" />');
       var columnClone;
@@ -150,7 +149,7 @@ var grids = {
     init: function () {
       this.add(grids.grids);
       this.build();
-      this.log(this.instances);
+      log(this.instances);
       this.initGrids();
     },
 
@@ -178,14 +177,6 @@ var grids = {
       $.each(this.instances, function (i, o) {
         o.init();
       });
-    },
-
-    log: function () {
-      if (debug.code) {
-        if (window.console && window.console.log && window.console.log.apply) {
-          window.console.log.apply(console, ['akva: ', arguments]);
-        }
-      }
     }
 
   };
