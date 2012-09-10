@@ -9,8 +9,7 @@
 var grids = [
   {
     gridName: 'desktop',
-    bpFrom: {size: 75, unit: 'em'},
-    bpTo: {size: 95, unit: 'em'},
+    breakpoints: {from: {size: 75, unit: 'em'}, to: {size: 95, unit: 'em'}},
     columnCount: 6,
     lineHeight: {size: 1.5, unit: 'em'},
     gutterWidth: {size: 1.5, unit: 'em'},
@@ -23,8 +22,7 @@ var grids = [
   },
   {
     gridName: 'tablet',
-    bpFrom: {size: 45, unit: 'em'},
-    bpTo: {size: 75, unit: 'em'},
+    breakpoints: {from: {size: 45, unit: 'em'}, to: {size: 95, unit: 'em'}},
     columnCount: 4,
     lineHeight: {size: 1.5, unit: 'em'},
     gutterWidth: {size: 1.5, unit: 'em'},
@@ -71,8 +69,9 @@ var grids = [
   var Grid = function Grid(o) {
     this.gridName = o.gridName;
     this.columnCount = o.columnCount;
-    this.bpFrom = o.bpFrom.size + o.bpFrom.unit;
-    this.bpTo = o.bpTo.size + o.bpTo.unit;
+    //this.bpFrom = o.bpFrom.size + o.bpFrom.unit;
+    //this.bpTo = o.bpTo.size + o.bpTo.unit;
+    this.breakpoints = {from: o.breakpoints.from.size + o.breakpoints.from.unit, to: o.breakpoints.to.size + o.breakpoints.to.unit};
     this.lineHeight = (o.lineHeight) ? ((o.lineHeight.size) ? o.lineHeight.size : null) + o.lineHeight.unit : null;
     this.gutterWidth = (o.gutterWidth) ? ((o.gutterWidth.size) ? o.gutterWidth.size : 0) + o.gutterWidth.unit : 0;
     this.outerGutterWidth = (o.outerGutterWidth) ? ((o.outerGutterWidth.size) ? o.outerGutterWidth.size : 0) + o.outerGutterWidth.unit : 0;
@@ -81,9 +80,43 @@ var grids = [
     this.maxWidth = (o.maxWidth) ? ((o.maxWidth.size) ? o.maxWidth.size : 'auto') + o.maxWidth.unit : 'auto';
     this.opacity = (o.opacity) ? o.opacity : 1;
     this.zindex = (o.zindex) ? o.zindex : 1;
+
+    var handleWindowWidthChange = function (query, id) {
+      log('handleWindowWidthChange: ', query.matches, id);
+
+      if (query.matches) {
+        $('.akva-grid-' + id).css('opacity', 1);
+      } else {
+        $('.akva-grid-' + id).css('opacity', 0);
+      }
+      
+    };
+
+    var breakpoint = {
+      query: '(min-width:' + o.breakpoints.from.size + o.breakpoints.from.unit + ') and (max-width:' + o.breakpoints.to.size + o.breakpoints.to.unit + ')',
+      id: o.gridName
+    };
+
+    var addMqs = (function () {
+
+      var id  = breakpoint.id;
+      var q   = breakpoint.query;
+      var mq  = window.matchMedia(q);
+      
+      mq.addListener(function () {
+        handleWindowWidthChange(mq, id);
+      });
+      
+      handleWindowWidthChange(mq, id);
+        
+    }());
+
+    
   };
 
   Grid.prototype = {
+
+    mqs: [],
 
     init: function () {
 
@@ -107,7 +140,7 @@ var grids = [
         maxWidth: this.maxWidth,
         opacity: this.opacity,
         zIndex: this.zindex
-      });
+      }).addClass('akva-grid-' + this.gridName);
       var inner = $('<div class="' + els.inner.slice(1) + '" />');
 
       if (this.outerGutterWidth) {
@@ -120,6 +153,7 @@ var grids = [
       wrapper.append(inner);
 
       return wrapper;
+      
     },
 
     createColumns: function () {
@@ -160,15 +194,13 @@ var grids = [
     instances: [],
 
     init: function () {
-      this.add(grids);
-      log(this.instances);
+      this.addGrids(grids);
       this.initGrids();
     },
 
-    add: function (grids) {
+    addGrids: function (grids) {
       var that = this;
 
-      // push only mq filtered grids ?
       $.each(grids, function (i) {
         var o = new Grid(grids[i]);
         that.instances.push(o);
@@ -177,7 +209,6 @@ var grids = [
 
     initGrids: function () {
       $.each(this.instances, function (i, o) {
-        log('the o is ', o);
         o.init();
       });
     }
