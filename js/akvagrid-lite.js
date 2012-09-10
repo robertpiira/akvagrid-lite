@@ -9,27 +9,27 @@
 var grids = [
   {
     gridName: 'desktop-and-above',
-    breakpoints: {from: {size: 75, unit: 'em'}, to: null},
+    breakpoints: {from: {size: 65, unit: 'em'}, to: null},
     columnCount: 6,
     lineHeight: {size: 1.5, unit: 'em'},
-    gutterWidth: {size: 1.5, unit: 'em'},
+    gutterWidth: {size: 2, unit: '%'},
     outerGutterWidth: {size: -2, unit: '%'},
     width: {size: 92, unit: '%'},
     borderTheme: {color: 'blue', style: 'solid'},
-    maxWidth: {size: 1000, unit: 'px'},
+    maxWidth: {size: 1300, unit: 'px'},
     opacity: 0.5,
     zindex: '1'
   },
   {
     gridName: 'mobile-and-tablet',
-    breakpoints: {from: null, to: {size: 85, unit: 'em'}},
+    breakpoints: {from: null, to: {size: 65, unit: 'em'}},
     columnCount: 4,
-    lineHeight: {size: 1.5, unit: 'em'},
-    gutterWidth: {size: 1.5, unit: 'em'},
-    outerGutterWidth: {size: -2, unit: '%'},
+    lineHeight: {size: 24, unit: 'px'},
+    gutterWidth: {size: 1.5, unit: '%'},
+    outerGutterWidth: {size: 1.5, unit: '%'},
     width: null,
     borderTheme: {color: 'purple', style: 'dashed'},
-    maxWidth: {size: 1000, unit: 'px'},
+    maxWidth: {size: 1300, unit: 'px'},
     opacity: 0.5,
     zindex: '1'
   }
@@ -53,12 +53,30 @@ var grids = [
     line:       '.akva-baseline-unit'
   };
 
-  var log = function () {
-    if (debug.code) {
-      if (window.console && window.console.log && window.console.log.apply) {
-        window.console.log.apply(console, ['akva: ', arguments]);
+  var common = {
+
+    getPageHeight: function () {
+      var pageHeight = $('html')[0].scrollHeight,
+          windowHeight = $(window).height();
+
+      return (pageHeight >= windowHeight) ? pageHeight : windowHeight;
+    },
+
+    throttle: function (method, scope) {
+      clearTimeout(method._tId);
+      method._tId = setTimeout(function () {
+        method.call(scope);
+      }, 500);
+    },
+
+    log: function () {
+      if (debug.code) {
+        if (window.console && window.console.log && window.console.log.apply) {
+          window.console.log.apply(console, ['akva: ', arguments]);
+        }
       }
     }
+
   };
 
   var Grid = function Grid(o) {
@@ -122,16 +140,37 @@ var grids = [
 
     init: function () {
 
-      log('Prototype init: ' + this.gridName + ' grid', this);
+      common.log('Prototype init: ' + this.gridName + ' grid', this);
+
+      var that = this;
       this.build();
+      this.timer = null;
+      this.listenForPageHeight();
+
+      window.onresize = function () {
+        common.throttle(that.listenForPageHeight, that);
+      };
+
+    },
+
+    listenForPageHeight: function () {
+
+      var thisGrid = $('.akva-grid-' + this.gridName);
+
+      this.createBaseline(common.getPageHeight(), this.gridName);
+      
+      if (thisGrid.is(':visible')) {
+        thisGrid.css('height', common.getPageHeight());
+      }
 
     },
 
     build: function () {
-      var wrapper = this.createWrapper();
-      var columns = this.createColumns();
+      var wrapper   = this.createWrapper();
+      var columns   = this.createColumns();
+      var baseline  = this.createBaseline(common.getPageHeight());
 
-      wrapper.find(els.inner).append(columns);
+      wrapper.find(els.inner).append(columns).append(baseline);
 
       $('body').append(wrapper);
     },
@@ -163,12 +202,13 @@ var grids = [
     },
 
     createColumns: function () {
-      log('creating ' + this.columnCount + ' columns for ' + this.gridName);
+      common.log('creating ' + this.columnCount + ' columns for ' + this.gridName);
       var columns = $('<div class="' + els.columns.slice(1) + '" />');
       var column = $('<div class="' + els.column.slice(1) + '" />');
       var columnClone;
       var i = 0;
 
+      // Border theme
       if (this.borderTheme) {
         column.css({
           borderColor: this.borderTheme.color,
@@ -176,12 +216,44 @@ var grids = [
         });
       }
 
+      // Gutters
+      column.css({
+        margin: '0 ' + this.gutterWidth
+      });
+
       for (; i < this.columnCount; i++) {
         columnClone = column.clone();
         columns.append(columnClone);
       }
 
       return columns;
+
+    },
+
+    createBaseline: function (pageHeight, target) {
+
+      if (!this.lineHeight) {
+        return false;
+      }
+
+      var wrapper = (target !== undefined) ? $('.akva-grid-' + target).find(els.baseline) : $('<div class="' + els.baseline.slice(1) + '" />');
+      var line = $('<div class="' + els.line.slice(1) + '" />');
+
+      if (this.lineHeight) {
+        line.css({
+          height: this.lineHeight
+        });
+      }
+
+      var lineCount = Math.ceil((pageHeight / line.height()) + 10);
+
+      wrapper.empty();
+
+      while (lineCount--) {
+        wrapper.append(line.clone());
+      }
+
+      return wrapper;
 
     }
 

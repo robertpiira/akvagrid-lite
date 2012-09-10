@@ -63,6 +63,4 @@
   flex: 1;
   border: 1px solid rgba(110, 180, 235,.9);
   border-width: 0 1px;
-  margin: 0 2%; /* hardcoded */
-  /* -webkit-flex-grow: 2; */
 }
