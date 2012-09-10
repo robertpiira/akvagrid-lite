@@ -8,8 +8,8 @@
 
 var grids = [
   {
-    gridName: 'desktop',
-    breakpoints: {from: {size: 75, unit: 'em'}, to: {size: 95, unit: 'em'}},
+    gridName: 'desktop-and-above',
+    breakpoints: {from: {size: 75, unit: 'em'}, to: null},
     columnCount: 6,
     lineHeight: {size: 1.5, unit: 'em'},
     gutterWidth: {size: 1.5, unit: 'em'},
@@ -21,8 +21,8 @@ var grids = [
     zindex: '1'
   },
   {
-    gridName: 'tablet',
-    breakpoints: {from: {size: 45, unit: 'em'}, to: {size: 95, unit: 'em'}},
+    gridName: 'mobile-and-tablet',
+    breakpoints: {from: null, to: {size: 85, unit: 'em'}},
     columnCount: 4,
     lineHeight: {size: 1.5, unit: 'em'},
     gutterWidth: {size: 1.5, unit: 'em'},
@@ -35,10 +35,6 @@ var grids = [
   }
 ];
 
-
-
-
-
 (function (grids, $) {
 
   'use strict';
@@ -49,12 +45,12 @@ var grids = [
   };
 
   var els = {
-    wrapper: '.akva-grid',
-    inner: '.akva-inner',
-    columns: '.akva-cols',
-    column: '.akva-col',
-    baseline: '.akva-baseline',
-    line: '.akva-baseline-unit'
+    wrapper:    '.akva-grid',
+    inner:      '.akva-inner',
+    columns:    '.akva-cols',
+    column:     '.akva-col',
+    baseline:   '.akva-baseline',
+    line:       '.akva-baseline-unit'
   };
 
   var log = function () {
@@ -65,13 +61,10 @@ var grids = [
     }
   };
 
-  // Grid contructor
   var Grid = function Grid(o) {
     this.gridName = o.gridName;
     this.columnCount = o.columnCount;
-    //this.bpFrom = o.bpFrom.size + o.bpFrom.unit;
-    //this.bpTo = o.bpTo.size + o.bpTo.unit;
-    this.breakpoints = {from: o.breakpoints.from.size + o.breakpoints.from.unit, to: o.breakpoints.to.size + o.breakpoints.to.unit};
+    this.breakpoints = (o.breakpoints) ? {from: (o.breakpoints.from) ? o.breakpoints.from.size + o.breakpoints.from.unit: null, to: (o.breakpoints.to) ? o.breakpoints.to.size + o.breakpoints.to.unit: null} : null;
     this.lineHeight = (o.lineHeight) ? ((o.lineHeight.size) ? o.lineHeight.size : null) + o.lineHeight.unit : null;
     this.gutterWidth = (o.gutterWidth) ? ((o.gutterWidth.size) ? o.gutterWidth.size : 0) + o.gutterWidth.unit : 0;
     this.outerGutterWidth = (o.outerGutterWidth) ? ((o.outerGutterWidth.size) ? o.outerGutterWidth.size : 0) + o.outerGutterWidth.unit : 0;
@@ -81,47 +74,55 @@ var grids = [
     this.opacity = (o.opacity) ? o.opacity : 1;
     this.zindex = (o.zindex) ? o.zindex : 1;
 
-    var handleWindowWidthChange = function (query, id) {
-      log('handleWindowWidthChange: ', query.matches, id);
+    // Handle visibility of grids with matchMedia
+    var isVisible = true;
+    var query;
 
-      if (query.matches) {
-        $('.akva-grid-' + id).css('opacity', 1);
-      } else {
-        $('.akva-grid-' + id).css('opacity', 0);
-      }
-      
-    };
+    if (this.breakpoints) {
 
-    var breakpoint = {
-      query: '(min-width:' + o.breakpoints.from.size + o.breakpoints.from.unit + ') and (max-width:' + o.breakpoints.to.size + o.breakpoints.to.unit + ')',
-      id: o.gridName
-    };
+      query = {
+        from: (this.breakpoints.from) ? '(min-width:' + this.breakpoints.from + ')' : '',
+        and: (this.breakpoints.from && this.breakpoints.to) ? ' and ' : '',
+        to: (this.breakpoints.to) ? '(max-width:' + this.breakpoints.to + ')' : '',
+        id: o.gridName
+      };
 
-    var addMqs = (function () {
+      var setVisibility = function (query) {
+        isVisible = (query.matches) ?  true : false;
+      };
 
-      var id  = breakpoint.id;
-      var q   = breakpoint.query;
-      var mq  = window.matchMedia(q);
-      
-      mq.addListener(function () {
-        handleWindowWidthChange(mq, id);
-      });
-      
-      handleWindowWidthChange(mq, id);
+      var handleWindowWidthChange = function (query, id) {
+        if (query.matches) {
+          $(els.wrapper + '-' + id).show();
+        } else {
+          $(els.wrapper + '-' + id).hide();
+        }
+      };
+
+      (function addQueries() {
+        var id  = query.id;
+        var q   = query.from + query.and + query.to;
+        var mq  = window.matchMedia(q);
         
-    }());
+        mq.addListener(function () {
+          handleWindowWidthChange(mq, id);
+        });
 
+        setVisibility(mq);
+        
+      }());
+
+      // On load visibility state
+      this.isVisible = isVisible;
+    }
     
   };
 
   Grid.prototype = {
 
-    mqs: [],
-
     init: function () {
 
-      log('init: ' + this.gridName + ' grid');
-
+      log('Prototype init: ' + this.gridName + ' grid', this);
       this.build();
 
     },
@@ -141,6 +142,7 @@ var grids = [
         opacity: this.opacity,
         zIndex: this.zindex
       }).addClass('akva-grid-' + this.gridName);
+      
       var inner = $('<div class="' + els.inner.slice(1) + '" />');
 
       if (this.outerGutterWidth) {
@@ -148,6 +150,10 @@ var grids = [
           'margin-left': this.outerGutterWidth,
           'margin-right': this.outerGutterWidth
         });
+      }
+
+      if (!this.isVisible) {
+        wrapper.hide();
       }
 
       wrapper.append(inner);
@@ -176,14 +182,6 @@ var grids = [
       }
 
       return columns;
-
-    },
-
-    show: function () {
-
-    },
-
-    hide: function () {
 
     }
 
