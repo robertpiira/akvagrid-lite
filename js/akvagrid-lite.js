@@ -74,6 +74,7 @@ var grids = [
       return (pageHeight >= windowHeight) ? pageHeight : windowHeight;
     },
 
+    // Throttle copyright (c) 2012, Nicholas C. Zakas
     throttle: function (method, scope) {
       clearTimeout(method._tId);
       method._tId = setTimeout(function () {
@@ -157,15 +158,15 @@ var grids = [
       var that = this;
       this.build();
       this.timer = null;
-      this.listenForPageHeight();
+      this.updateGridOnWindowWidthChange();
 
       window.onresize = function () {
-        common.throttle(that.listenForPageHeight, that);
+        common.throttle(that.updateGridOnWindowWidthChange, that);
       };
 
     },
 
-    listenForPageHeight: function () {
+    updateGridOnWindowWidthChange: function () {
 
       var thisGrid = $('.akva-grid-' + this.gridName);
 
@@ -251,6 +252,9 @@ var grids = [
 
       var wrapper = (target !== undefined) ? $('.akva-grid-' + target).find(els.baseline) : $('<div class="' + els.baseline.slice(1) + '" />');
       var line = $('<div class="' + els.line.slice(1) + '" />');
+      var htmlLine;
+      var markup = "";
+      var lineCount = 0;
 
       if (this.lineHeight) {
         line.css({
@@ -258,13 +262,23 @@ var grids = [
         });
       }
 
-      var lineCount = Math.ceil((pageHeight / line.height()) + 10);
+      lineCount = Math.ceil((pageHeight / line.height()) + 10);
+      htmlLine = $('<div>').append(line.clone().remove()).html();
 
+      // Max line elements
+      if (lineCount > 1000) {
+        lineCount = 1000;
+      }
+
+      // Trash the old lines
       wrapper.empty();
 
+      // Create new lines
       while (lineCount--) {
-        wrapper.append(line.clone());
+        markup += htmlLine;
       }
+
+      wrapper.html(markup);
 
       return wrapper;
 
