@@ -12,12 +12,24 @@ var grids = [
     breakpoints: {from: {size: 65, unit: 'em'}, to: null},
     columnCount: 6,
     lineHeight: {size: 1.5, unit: 'em'},
-    gutterWidth: {size: 2, unit: '%'},
-    outerGutterWidth: {size: -2, unit: '%'},
-    width: {size: 92, unit: '%'},
+    gutterWidth: {size: 1, unit: '%'},
+    outerGutterWidth: {size: -1, unit: '%'},
     borderTheme: {color: 'blue', style: 'solid'},
-    maxWidth: {size: 1300, unit: 'px'},
+    width: {size: 92, unit: '%'},
+    maxWidth: {size: 1200, unit: 'px'},
     opacity: 0.5,
+    zindex: '1'
+  },
+  {
+    gridName: 'desktop-and-above-ghost-grid',
+    breakpoints: {from: {size: 65, unit: 'em'}, to: null},
+    columnCount: 4,
+    gutterWidth: {size: 1, unit: '%'},
+    outerGutterWidth: {size: -1, unit: '%'},
+    borderTheme: {color: 'red', style: 'dotted'},
+    width: {size: 92, unit: '%'},
+    maxWidth: {size: 1200, unit: 'px'},
+    opacity: 0.6,
     zindex: '1'
   },
   {
@@ -27,9 +39,9 @@ var grids = [
     lineHeight: {size: 24, unit: 'px'},
     gutterWidth: {size: 1.5, unit: '%'},
     outerGutterWidth: {size: 1.5, unit: '%'},
-    width: null,
     borderTheme: {color: 'purple', style: 'dashed'},
-    maxWidth: {size: 1300, unit: 'px'},
+    width: null,
+    maxWidth: {size: 1200, unit: 'px'},
     opacity: 0.5,
     zindex: '1'
   }
@@ -178,6 +190,7 @@ var grids = [
     createWrapper: function () {
       var wrapper = $('<div class="' + els.wrapper.slice(1) + '" />').css({
         maxWidth: this.maxWidth,
+        width: this.width,
         opacity: this.opacity,
         zIndex: this.zindex
       }).addClass('akva-grid-' + this.gridName);
