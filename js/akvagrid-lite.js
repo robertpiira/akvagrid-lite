@@ -11,7 +11,7 @@ var grids = [
     gridName: 'desktop-and-above',
     breakpoints: {from: {size: 65, unit: 'em'}, to: null},
     columnCount: 6,
-    lineHeight: {size: 1.5, unit: 'em'},
+    lineHeight: {size: 2, unit: 'em'},
     gutterWidth: {size: 1, unit: '%'},
     outerGutterWidth: {size: -1, unit: '%'},
     borderTheme: {color: 'blue', style: 'solid'},
@@ -169,11 +169,10 @@ var grids = [
     updateGridOnWindowWidthChange: function () {
 
       var thisGrid = $('.akva-grid-' + this.gridName);
-
-      this.createBaseline(common.getPageHeight(), this.gridName);
       
       if (thisGrid.is(':visible')) {
         thisGrid.css('height', common.getPageHeight());
+        this.createBaseline(common.getPageHeight(), this.gridName);
       }
 
     },
